@@ -1,0 +1,12 @@
+#!/bin/bash
+########################################################################3
+# XENTA DEBOOTSRAP SCRIPT
+# AUTHOR    : XENTA OS
+# LICENSE   : GNU GPL 3.0
+# WEBSITE   : http://www.xentaos.org/
+########################################################################
+
+# Gunakan Perintah dibawah ini jika keluar dari chroot
+apt-get clean && apt-get autoremove && rm -rf /tmp/* ~/.bash_history && umount /proc && umount /sys && umount /dev/pts
+exit
+sudo umount edit/dev && sudo umount mnt
