@@ -1,0 +1,15 @@
+#!/bin/bash
+########################################################################3
+# XENTA DEBOOTSRAP SCRIPT
+# AUTHOR    : XENTA OS
+# LICENSE   : GNU GPL 3.0
+# WEBSITE   : http://www.xentaos.org/
+########################################################################
+# Membuat Kerangka Directory Kerja
+# Jalankan Sebagai User Biasa. JIka Berada di posisi root silahkan keluar dan 
+# Jalankan perintah ini diterminal
+cd $HOME && mkdir -p Project/{root32,dvd32}
+
+# Membuat Kerangka Sistem Operasi Awal (Base Sistem)
+sudo debootstrap --arch=i386 --variant=minbase xenial $HOME/Project/root32 http://archive.ubuntu.com/ubuntu/
+# Ini Memerlukan Koneksi Internet dan Waktu Cukup lama Tunggu saja sampai Selesai
