@@ -1,0 +1,116 @@
+#!/bin/bash
+########################################################################3
+# XENTA DEBOOTSRAP SCRIPT
+# AUTHOR    : XENTA OS
+# LICENSE   : GNU GPL 3.0
+# WEBSITE   : http://www.xentaos.org/
+########################################################################
+
+# Menghapus filesistem.squashfs jika sebelumnya membuat filesistem.squashfs 
+# JIka Pertama kali membuat iso lewatkan perintah dibawah ini
+sudo rm ~/Project/dvd32/casper/filesystem.squashfs 
+# (only if rebuilding a project)
+
+
+# Mmebuat Folder Kerangka dvd32 pertama kali. jika sudah buat lewatin saja
+cd $HOME/Project 
+# (if you're not in there already)
+cd dvd32 && sudo mkdir casper .disk isolinux
+sudo cp root32/boot/vmlinuz-4.4.0-21-generic dvd32/casper/vmlinuz
+sudo cp root32/boot/initrd.img-4.4.0-21-generic dvd32/casper/initrd.lz
+cd dvd32/isolinux/ 
+sudo wget -c https://github.com/xentaos/xenta-debootsrap/raw/master/lib/isolinux.bin && cd ../
+sudo cp /usr/lib/syslinux/modules/bios/Idllinux.c32 dvd32/isolinux/
+sudo cp /boot/memtest86+.bin dvd32/casper/memtest
+
+nano ./dvd32/README.diskdefines
+#define DISKNAME  Xenta OS
+#define TYPE  binary
+#define TYPEbinary  1
+#define ARCH  i386
+#define ARCHi386  1
+#define DISKNUM  1
+#define DISKNUM1  1
+#define TOTALNUM  0
+#define TOTALNUM0  1
+
+cd dvd32
+sudo mkdir .disk
+cd .disk
+sudo su
+echo "base_installable" > base_installable
+echo "full_cd/single" > cd_type
+echo "Xenta OS 1.3" > info
+echo "http://www.xentaos.org/" > release_notes_url
+exit
+
+# Membuat File isolinux.cfg
+# Isi File isolinux.cfg
+DEFAULT live
+LABEL live
+  menu label ^Start Xenta OS 1.3 LTS Console Edisi
+  kernel /casper/vmlinuz
+  append boot=casper initrd=/casper/initrd.lz --
+DISPLAY isolinux
+
+# Membuat File isolinux
+# Isi File isolinux
+*******************************************************************************
+ \XXXXXXXXXXXXXXXXXXXXXXXXXXX  
+   \XXXXXXXXXXXXXXXXXXXXXXXXX  WELLCOME TO XENTA OS 1.3 AROK CONSOLE EDISI
+     \XXXXXXXXXXXXXXXXXXXXXXX  
+       \XXXXXXXXXXXXXXXXXXXXX  OS          : Xenta OS
+        /XXXXXXXXXXXXXXXXXXXX  Arch        : i386
+       /XXXXXXXXXXXXXXXXXXXXX  Versi       : 1.3 LTS
+      /XXX/\XXXXXXXXXXXXXXXXX  Codename    : Arok
+     /XX/  /XXX\XXXXXXXXXXXXX  Edisi       : Console
+    /X/   /XXXXXXXXXXXXXXXXXX  
+    /    /XXXXXXXXX\XXXXXXXXX  Website      : http://www.xentaos.org/
+        /XXXXXX/ \XXXXXXXXXXX  Facebook     : Xenta OS
+       /XXXXXX/   /XXXXXXXXXX  Youtube      : Xenta OS
+      /XXXXX/    /XXX/XXXXXXX  Twitter      : @xentaos
+     /XXX/      /XX/  \XXXXXX  IRC Channel (freenode) #xentaos
+    /XX/       /X/     \XXXXX  
+   /X/         /         \XXX  
+   /                       \X  
+                               
+*******************************************************************************
+
+# Membuat List Paket & Info live sistem
+cd $HOME/Project
+sudo chroot root32 dpkg-query -W --showformat='${Package} ${Version}\n' | sudo tee dvd32/casper/filesystem.manifest
+sudo cp -v dvd32/casper/filesystem.manifest dvd32/casper/filesystem.manifest-desktop
+sudo su
+printf $(sudo du -sx --block-size=1 root32 | cut -f1) > dvd32/casper/filesystem.size
+exit
+
+# Membuat Filesistem.squashfs STANDAR COMPRESS
+cd $HOME/Project
+sudo mksquashfs root32 ./dvd32/casper/filesystem.squashfs 
+
+# Membuat Filesistem.squashfs HIGH COMPRESS
+cd $HOME/Project
+sudo mksquashfs root32 dvd32/casper/filesystem.squashfs -b 1048576 -comp xz -Xdict-size 100%
+
+
+# Membuat md5sum iso
+cd $HOME/Project/dvd32
+find -type f -print0 | sudo xargs -0 md5sum | grep -v isolinux/boot.cat | sudo tee MD5SUMS
+
+
+# Membuat ISO Rilis 
+cd $HOME/Project 
+sudo mkisofs -r -V "xentaos-1.3lts-console-i386" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../xentaos-1.3lts-console-i386.iso dvd32
+cd .. && sudo chmod 777 xentaos-1.3lts-console-i386.iso
+
+# Membuat ISOHybrid
+isohybrid xentaos-1.3lts-console-i386.iso
+
+# Membuat MD5sum
+md5sum xentaos-1.3lts-console-i386.iso > xentaos-1.3lts-console-i386.iso.md5sum
+
+# Membuat SHA1sum
+sha1sum xentaos-1.3lts-console-i386.iso > xentaos-1.3lts-console-i386.iso.sha1sum
+
+# Membuat SHA2sum
+sha2sum xentaos-1.3lts-console-i386.iso > xentaos-1.3lts-console-i386.iso.sha2sum
